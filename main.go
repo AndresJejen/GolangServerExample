@@ -51,6 +51,104 @@ func AddHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Los numeros que me enviaste son %v y %v - y el resultado es %v", number_one, number_two, resultado)
 }
 
+func SubstractHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/restar" {
+		http.Error(w, "404 not Found", http.StatusNotFound)
+		return
+	}
+
+	if r.Method != "GET" {
+		http.Error(w, "Method not Supported", http.StatusNotFound)
+		return
+	}
+
+	sumando, _ := r.URL.Query()["sumando"]
+	elotro, _ := r.URL.Query()["otro"]
+
+	number_one, err := ToFloat(sumando[0])
+
+	if err != nil {
+		http.Error(w, "sumando is not a number", http.StatusBadRequest)
+		return
+	}
+	number_two, err1 := ToFloat(elotro[0])
+	if err1 != nil {
+		http.Error(w, "otro is not a number", http.StatusBadRequest)
+		return
+	}
+
+	resultado := calculadora.Restar(number_one, number_two)
+
+	fmt.Fprintf(w, "Los numeros que me enviaste son %v y %v - y el resultado es %v", number_one, number_two, resultado)
+}
+
+func MultiplyHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/multiplicar" {
+		http.Error(w, "404 not Found", http.StatusNotFound)
+		return
+	}
+
+	if r.Method != "GET" {
+		http.Error(w, "Method not Supported", http.StatusNotFound)
+		return
+	}
+
+	sumando, _ := r.URL.Query()["sumando"]
+	elotro, _ := r.URL.Query()["otro"]
+
+	number_one, err := ToFloat(sumando[0])
+
+	if err != nil {
+		http.Error(w, "sumando is not a number", http.StatusBadRequest)
+		return
+	}
+	number_two, err1 := ToFloat(elotro[0])
+	if err1 != nil {
+		http.Error(w, "otro is not a number", http.StatusBadRequest)
+		return
+	}
+
+	resultado := calculadora.Multiplicar(number_one, number_two)
+
+	fmt.Fprintf(w, "Los numeros que me enviaste son %v y %v - y el resultado es %v", number_one, number_two, resultado)
+}
+
+func DivideHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/dividir" {
+		http.Error(w, "404 not Found", http.StatusNotFound)
+		return
+	}
+
+	if r.Method != "GET" {
+		http.Error(w, "Method not Supported", http.StatusNotFound)
+		return
+	}
+
+	sumando, _ := r.URL.Query()["sumando"]
+	elotro, _ := r.URL.Query()["otro"]
+
+	number_one, err := ToFloat(sumando[0])
+
+	if err != nil {
+		http.Error(w, "sumando is not a number", http.StatusBadRequest)
+		return
+	}
+	number_two, err1 := ToFloat(elotro[0])
+	if err1 != nil {
+		http.Error(w, "otro is not a number", http.StatusBadRequest)
+		return
+	}
+
+	resultado, err_div := calculadora.Dividir(number_one, number_two)
+
+	if err_div != nil {
+		http.Error(w, err_div.Error(), http.StatusBadRequest)
+		return
+	}
+
+	fmt.Fprintf(w, "Los numeros que me enviaste son %v y %v - y el resultado es %v", number_one, number_two, resultado)
+}
+
 func ServerHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Serving request %s", r.URL.Path)
 	host, _ := os.Hostname()
@@ -71,7 +169,10 @@ func ServerHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/sumar", AddHandler)
+	http.HandleFunc("/restar", SubstractHandler)
+	http.HandleFunc("/dividir", DivideHandler)
 	http.HandleFunc("/server", ServerHandler)
+	http.HandleFunc("/multiplicar", MultiplyHandler)
 
 	fmt.Printf("Starting server at port 8080\n")
 
