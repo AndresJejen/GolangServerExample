@@ -1,27 +1,81 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
+
+	"log"
+	"net"
+	"net/http"
+	"os"
 
 	"github.com/AndresJejen/AprendiendoGo/calculadora"
 )
 
-func main() {
-	var saludo = "Hola estoy saludando"
-	fmt.Printf("Hello World %v \n", saludo)
+func ToFloat(value string) (float32, error) {
+	if s, err := strconv.ParseFloat(value, 32); err == nil {
+		return float32(s), nil
+	}
+	return 0, errors.New("El valor ingresado no puede convertirse a flotante")
+}
 
-	var numero1 float32 = 12.3
-	var numero2 float32 = 23
+func AddHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/sumar" {
+		http.Error(w, "404 not Found", http.StatusNotFound)
+		return
+	}
 
-	fmt.Printf("Sumando %v y %v %v \n", numero1, numero2, calculadora.Sumar(numero1, numero2))
-	fmt.Printf("Restando %v y %v %v \n", numero1, numero2, calculadora.Restar(numero1, numero2))
-	fmt.Printf("Multiplicando %v y %v %v \n", numero1, numero2, calculadora.Multiplicar(numero1, numero2))
+	if r.Method != "GET" {
+		http.Error(w, "Method not Supported", http.StatusNotFound)
+		return
+	}
 
-	var res, err = calculadora.Dividir(numero1, numero2)
+	sumando, _ := r.URL.Query()["sumando"]
+	elotro, _ := r.URL.Query()["otro"]
+
+	number_one, err := ToFloat(sumando[0])
 
 	if err != nil {
-		fmt.Println(err.Error())
-	} else {
-		fmt.Printf("Dividiendo %v y %v %v \n", numero1, numero2, res)
+		http.Error(w, "sumando is not a number", http.StatusBadRequest)
+		return
+	}
+	number_two, err1 := ToFloat(elotro[0])
+	if err1 != nil {
+		http.Error(w, "otro is not a number", http.StatusBadRequest)
+		return
+	}
+
+	resultado := calculadora.Sumar(number_one, number_two)
+
+	fmt.Fprintf(w, "Los numeros que me enviaste son %v y %v - y el resultado es %v", number_one, number_two, resultado)
+}
+
+func ServerHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Serving request %s", r.URL.Path)
+	host, _ := os.Hostname()
+	fmt.Fprintf(w, "Hola Mundo!\n")
+	fmt.Fprintf(w, "Version: 1.0.0\n")
+	fmt.Fprintf(w, "Hostname %s\n", host)
+
+	addrs, _ := net.InterfaceAddrs()
+
+	for _, a := range addrs {
+		if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				fmt.Fprintf(w, "IP Addres: %s\n", ipnet.IP.String())
+			}
+		}
+	}
+}
+
+func main() {
+	http.HandleFunc("/sumar", AddHandler)
+	http.HandleFunc("/server", ServerHandler)
+
+	fmt.Printf("Starting server at port 8080\n")
+
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatal(err)
 	}
 }
