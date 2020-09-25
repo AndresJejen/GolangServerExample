@@ -124,18 +124,18 @@ func DivideHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sumando, _ := r.URL.Query()["sumando"]
-	elotro, _ := r.URL.Query()["otro"]
+	sumando, _ := r.URL.Query()["Divisor"]
+	elotro, _ := r.URL.Query()["Dividendo"]
 
 	number_one, err := ToFloat(sumando[0])
 
 	if err != nil {
-		http.Error(w, "sumando is not a number", http.StatusBadRequest)
+		http.Error(w, "Divisor is not a number", http.StatusBadRequest)
 		return
 	}
 	number_two, err1 := ToFloat(elotro[0])
 	if err1 != nil {
-		http.Error(w, "otro is not a number", http.StatusBadRequest)
+		http.Error(w, "Dividendo is not a number", http.StatusBadRequest)
 		return
 	}
 
@@ -174,9 +174,9 @@ func main() {
 	http.HandleFunc("/server", ServerHandler)
 	http.HandleFunc("/multiplicar", MultiplyHandler)
 
-	fmt.Printf("Starting server at port 8080\n")
+	fmt.Printf("Starting server at port 8081\n")
 
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8081", nil); err != nil {
 		log.Fatal(err)
 	}
 }
